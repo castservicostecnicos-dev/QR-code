@@ -1,0 +1,226 @@
+{
+  "clients": [
+    {
+      "id": "client-1",
+      "name": "Carlos Oliveira",
+      "company": "Café & Bistrô Aromas",
+      "email": "contato@cafearomas.com.br",
+      "password": "cafe123",
+      "phone": "(11) 98765-4321",
+      "status": "active",
+      "maxQRCodes": 10,
+      "notes": "Placas de mesa impressas com QR Code do Wi-Fi e Cardápio.",
+      "createdAt": "2026-10-10T13:11:43.206Z",
+      "updatedAt": "2026-11-07T13:11:43.206Z"
+    },
+    {
+      "id": "client-2",
+      "name": "Mariana Souza",
+      "company": "Pousada Vila do Sol",
+      "email": "reservas@viladosol.com.br",
+      "password": "sol123",
+      "phone": "(24) 99887-1122",
+      "status": "active",
+      "maxQRCodes": 5,
+      "notes": "Trocam a senha do Wi-Fi dos hóspedes a cada início de mês.",
+      "createdAt": "2026-10-25T13:11:43.206Z",
+      "updatedAt": "2026-11-04T13:11:43.206Z"
+    },
+    {
+      "id": "client-3",
+      "name": "Dra. Camila Ramos",
+      "company": "Camila Ramos Odontologia",
+      "email": "clinica@camilaodonto.com.br",
+      "password": "odonto123",
+      "phone": "(11) 97123-4567",
+      "status": "active",
+      "maxQRCodes": 5,
+      "notes": "QR Code no balcão da recepção para Wi-Fi e Pix da consulta.",
+      "createdAt": "2026-11-02T13:11:43.206Z",
+      "updatedAt": "2026-11-08T13:11:43.206Z"
+    }
+  ],
+  "qrcodes": [
+    {
+      "id": "qr-1",
+      "shortCode": "wifi-aromas",
+      "title": "Wi-Fi Clientes - Café Aromas",
+      "type": "wifi",
+      "clientId": "client-1",
+      "clientName": "Café & Bistrô Aromas",
+      "content": {
+        "ssid": "CafeAromas_Clientes",
+        "password": "aromas-canela-2026",
+        "securityType": "WPA",
+        "welcomeNote": "Bem-vindo ao Café Aromas! Conecte-se e deguste o melhor grão artesanal.",
+        "contactSupport": "Dúvidas? Chame um atendente no balcão."
+      },
+      "design": {
+        "fgColor": "#843d12",
+        "bgColor": "#fffbf5",
+        "frame": "wifi",
+        "frameText": "WI-FI GRÁTIS AROMAS",
+        "frameColor": "#843d12",
+        "cornerStyle": "rounded",
+        "logoType": "coffee"
+      },
+      "createdAt": "2026-10-15T13:11:43.206Z",
+      "updatedAt": "2026-11-08T13:11:43.206Z",
+      "totalScans": 285,
+      "status": "active",
+      "scanLogs": [
+        {
+          "timestamp": "2026-11-09T13:11:53.594Z",
+          "userAgent": "curl/7.88.1",
+          "device": "Mobile / Tablet",
+          "ip": "127.0.0.1"
+        },
+        {
+          "timestamp": "2026-11-09T12:56:43.206Z",
+          "device": "iPhone / iOS",
+          "userAgent": "Mobile"
+        },
+        {
+          "timestamp": "2026-11-09T12:26:43.206Z",
+          "device": "Samsung Galaxy / Android",
+          "userAgent": "Mobile"
+        },
+        {
+          "timestamp": "2026-11-09T11:11:43.206Z",
+          "device": "Xiaomi / Android",
+          "userAgent": "Mobile"
+        },
+        {
+          "timestamp": "2026-11-09T09:11:43.206Z",
+          "device": "iPhone / iOS",
+          "userAgent": "Mobile"
+        }
+      ]
+    },
+    {
+      "id": "qr-2",
+      "shortCode": "cardapio-aromas",
+      "title": "Cardápio Digital - Café Aromas",
+      "type": "url",
+      "clientId": "client-1",
+      "clientName": "Café & Bistrô Aromas",
+      "content": {
+        "targetUrl": "https://example.com/cardapio-cafe-aromas"
+      },
+      "design": {
+        "fgColor": "#1c1917",
+        "bgColor": "#ffffff",
+        "frame": "cardapio",
+        "frameText": "VEJA O NOSSO CARDÁPIO",
+        "frameColor": "#1c1917",
+        "cornerStyle": "rounded",
+        "logoType": "store"
+      },
+      "createdAt": "2026-10-15T13:11:43.206Z",
+      "updatedAt": "2026-11-04T13:11:43.206Z",
+      "totalScans": 612,
+      "status": "active",
+      "scanLogs": [
+        {
+          "timestamp": "2026-11-09T13:06:43.206Z",
+          "device": "iPhone / iOS"
+        },
+        {
+          "timestamp": "2026-11-09T12:41:43.206Z",
+          "device": "Motorola / Android"
+        }
+      ]
+    },
+    {
+      "id": "qr-3",
+      "shortCode": "wifi-viladosol",
+      "title": "Wi-Fi Hóspedes - Pousada Vila do Sol",
+      "type": "wifi",
+      "clientId": "client-2",
+      "clientName": "Pousada Vila do Sol",
+      "content": {
+        "ssid": "VilaDoSol_Hospedes_VIP",
+        "password": "sol-e-praia-paraty",
+        "securityType": "WPA",
+        "welcomeNote": "Aproveite seus dias de descanso na Vila do Sol!",
+        "contactSupport": "Ramal 9 para falar com a Recepção 24h."
+      },
+      "design": {
+        "fgColor": "#0369a1",
+        "bgColor": "#f0f9ff",
+        "frame": "wifi",
+        "frameText": "WI-FI HÓSPEDES VILA DO SOL",
+        "frameColor": "#0284c7",
+        "cornerStyle": "rounded",
+        "logoType": "wifi"
+      },
+      "createdAt": "2026-10-26T13:11:43.206Z",
+      "updatedAt": "2026-11-07T13:11:43.206Z",
+      "totalScans": 153,
+      "status": "active",
+      "scanLogs": [
+        {
+          "timestamp": "2026-11-09T12:51:43.206Z",
+          "device": "iPhone / iOS"
+        }
+      ]
+    },
+    {
+      "id": "qr-4",
+      "shortCode": "wifi-master-dev",
+      "title": "Wi-Fi Escritório Central (Dev Master)",
+      "type": "wifi",
+      "clientId": "dev",
+      "clientName": "Dev Master (Administrador)",
+      "content": {
+        "ssid": "TechStudio_Staff_5G",
+        "password": "SuperDevPassword2026!",
+        "securityType": "WPA",
+        "welcomeNote": "Rede interna do laboratório de tecnologia."
+      },
+      "design": {
+        "fgColor": "#4f46e5",
+        "bgColor": "#ffffff",
+        "frame": "scan_me",
+        "frameText": "CONECTE AO WI-FI DEV",
+        "frameColor": "#4f46e5",
+        "cornerStyle": "rounded",
+        "logoType": "wifi"
+      },
+      "createdAt": "2026-10-20T13:11:43.206Z",
+      "updatedAt": "2026-10-30T13:11:43.206Z",
+      "totalScans": 48,
+      "status": "active",
+      "scanLogs": []
+    },
+    {
+      "id": "qr-5",
+      "shortCode": "pix-camila",
+      "title": "Pix Consulta & Procedimentos - Dra. Camila",
+      "type": "pix",
+      "clientId": "client-3",
+      "clientName": "Camila Ramos Odontologia",
+      "content": {
+        "pixKey": "clinica@camilaodonto.com.br",
+        "pixKeyType": "email",
+        "merchantName": "Camila Ramos Odontologia LTDA",
+        "merchantCity": "Sao Paulo",
+        "description": "Pagamento de Consulta e Procedimentos Odontológicos"
+      },
+      "design": {
+        "fgColor": "#0f766e",
+        "bgColor": "#f0fdfa",
+        "frame": "badge",
+        "frameText": "PAGUE VIA PIX AQUI",
+        "frameColor": "#0d9488",
+        "cornerStyle": "rounded",
+        "logoType": "store"
+      },
+      "createdAt": "2026-11-03T13:11:43.206Z",
+      "updatedAt": "2026-11-08T13:11:43.206Z",
+      "totalScans": 92,
+      "status": "active",
+      "scanLogs": []
+    }
+  ]
+}

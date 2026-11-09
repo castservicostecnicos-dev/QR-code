@@ -1,0 +1,6 @@
+{
+  "name": "QR Dinâmico - Gerador e Gerenciador de QR Codes Reutilizáveis",
+  "description": "Crie e gerencie QR Codes dinâmicos com destino e senhas editáveis a qualquer momento sem precisar reimprimir. Inclui painel de controle, gestão de clientes e acesso Dev.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
