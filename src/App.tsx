@@ -11,14 +11,27 @@ import { AnalyticsModal } from './components/AnalyticsModal';
 import { MobileScanSimulator } from './components/MobileScanSimulator';
 import { LoginModal } from './components/LoginModal';
 import { PublicQRViewer } from './components/PublicQRViewer';
+import { GitHubPagesModal } from './components/GitHubPagesModal';
 import type { ClientUser, QRCodeItem, UserSession } from './types';
-import { Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertCircle, DownloadCloud, UploadCloud, Github } from 'lucide-react';
+import {
+  getLocalClients,
+  saveLocalClients,
+  getLocalQRCodes,
+  saveLocalQRCodes,
+  fallbackInitialClients,
+  fallbackInitialQRCodes,
+} from './utils/storage';
 
 export default function App() {
-  // Check if viewing direct public QR landing page
-  const pathname = window.location.pathname;
-  const isPublicView = pathname.startsWith('/view/') || pathname.startsWith('/q/');
-  const publicShortCode = isPublicView ? pathname.split('/')[2] || '' : '';
+  // Check if viewing direct public QR landing page (supports subpath, query param ?q=, and hash #/q/)
+  const searchParams = new URLSearchParams(window.location.search);
+  const qParam = searchParams.get('q') || searchParams.get('code');
+  const hashMatch = window.location.hash.match(/#(?:view|q)\/([a-zA-Z0-9_-]+)/);
+  const pathMatch = window.location.pathname.match(/(?:view|q)\/([a-zA-Z0-9_-]+)/);
+
+  const publicShortCode = qParam || (hashMatch ? hashMatch[1] : (pathMatch ? pathMatch[1] : ''));
+  const isPublicView = Boolean(publicShortCode);
 
   // Auth & Session
   const [currentSession, setCurrentSession] = useState<UserSession>({
@@ -63,6 +76,7 @@ export default function App() {
   const [simulatorShortCode, setSimulatorShortCode] = useState<string | undefined>(undefined);
 
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isGithubModalOpen, setIsGithubModalOpen] = useState(false);
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -72,23 +86,38 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Fetch initial data
+  // Fetch initial data (Hybrid: tries backend API, falls back to localStorage on static GitHub Pages)
   const loadData = async () => {
     try {
       setLoading(true);
-      const [resClients, resQRs] = await Promise.all([
-        fetch('/api/clients'),
-        fetch('/api/qrcodes'),
-      ]);
+      let loadedClients: ClientUser[] | null = null;
+      let loadedQRs: QRCodeItem[] | null = null;
 
-      if (resClients.ok) {
-        const cData = await resClients.json();
-        setClients(cData);
+      try {
+        const [resClients, resQRs] = await Promise.all([
+          fetch('/api/clients'),
+          fetch('/api/qrcodes'),
+        ]);
+
+        if (resClients.ok && resQRs.ok) {
+          loadedClients = await resClients.json();
+          loadedQRs = await resQRs.json();
+          if (loadedClients) saveLocalClients(loadedClients);
+          if (loadedQRs) saveLocalQRCodes(loadedQRs);
+        }
+      } catch {
+        // Backend not available (e.g. static GitHub Pages host)
       }
-      if (resQRs.ok) {
-        const qData = await resQRs.json();
-        setQrcodes(qData);
+
+      if (!loadedClients || loadedClients.length === 0) {
+        loadedClients = getLocalClients();
       }
+      if (!loadedQRs || loadedQRs.length === 0) {
+        loadedQRs = getLocalQRCodes();
+      }
+
+      setClients(loadedClients || []);
+      setQrcodes(loadedQRs || []);
     } catch (err) {
       console.error('Failed to load data:', err);
     } finally {
@@ -102,8 +131,53 @@ export default function App() {
     }
   }, [isPublicView]);
 
+  // Export / Import Backup Data for GitHub Pages
+  const handleExportBackup = () => {
+    const data = {
+      clients: getLocalClients(),
+      qrcodes: getLocalQRCodes(),
+      exportedAt: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `backup-qrdinamico-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup exportado com sucesso!');
+  };
+
+  const handleImportBackup = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const json = JSON.parse(event.target?.result as string);
+        if (json.clients && Array.isArray(json.clients)) {
+          saveLocalClients(json.clients);
+          setClients(json.clients);
+        }
+        if (json.qrcodes && Array.isArray(json.qrcodes)) {
+          saveLocalQRCodes(json.qrcodes);
+          setQrcodes(json.qrcodes);
+        }
+        showToast('Dados restaurados com sucesso a partir do backup!');
+      } catch (err) {
+        alert('Arquivo de backup inválido.');
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
   // Clients Handlers
   const handleSaveClient = async (clientData: Partial<ClientUser>) => {
+    let savedSuccessfully = false;
+
     try {
       if (clientToEdit) {
         const res = await fetch(`/api/clients/${clientToEdit.id}`, {
@@ -111,27 +185,52 @@ export default function App() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(clientData),
         });
-        if (!res.ok) throw new Error('Falha ao atualizar cliente.');
-        showToast('Dados e credenciais do cliente atualizados com sucesso!');
+        if (res.ok) savedSuccessfully = true;
       } else {
         const res = await fetch('/api/clients', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(clientData),
         });
-        if (!res.ok) {
-          const errData = await res.json();
-          throw new Error(errData.error || 'Falha ao cadastrar cliente.');
-        }
-        showToast('Novo cliente cadastrado com credenciais ativas!');
+        if (res.ok) savedSuccessfully = true;
       }
-
-      setIsClientModalOpen(false);
-      setClientToEdit(null);
-      loadData();
-    } catch (err: any) {
-      alert(err?.message || 'Erro ao salvar cliente.');
+    } catch {
+      // Backend not reached, fall back to local
     }
+
+    if (!savedSuccessfully) {
+      // Local fallback for GitHub Pages
+      const currentList = getLocalClients();
+      if (clientToEdit) {
+        const updated = currentList.map((c) =>
+          c.id === clientToEdit.id ? { ...c, ...clientData, updatedAt: new Date().toISOString() } : c
+        );
+        saveLocalClients(updated);
+        setClients(updated);
+      } else {
+        const newC: ClientUser = {
+          id: 'client-' + Date.now().toString(36),
+          name: clientData.name || '',
+          company: clientData.company || clientData.name || '',
+          email: clientData.email || '',
+          password: clientData.password || '123456',
+          phone: clientData.phone || '',
+          status: clientData.status || 'active',
+          maxQRCodes: clientData.maxQRCodes || 10,
+          notes: clientData.notes || '',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        const updated = [newC, ...currentList];
+        saveLocalClients(updated);
+        setClients(updated);
+      }
+    }
+
+    showToast(clientToEdit ? 'Cliente atualizado!' : 'Novo cliente cadastrado com credenciais!');
+    setIsClientModalOpen(false);
+    setClientToEdit(null);
+    loadData();
   };
 
   const handleDeleteClient = async (clientId: string) => {
@@ -179,46 +278,113 @@ export default function App() {
 
   // QR Code Handlers
   const handleSaveQRCode = async (qrData: Partial<QRCodeItem>) => {
-    if (qrToEdit) {
-      const res = await fetch(`/api/qrcodes/${qrToEdit.id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(qrData),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err?.error || 'Falha ao atualizar QR Code.');
+    let saved = false;
+
+    try {
+      if (qrToEdit) {
+        const res = await fetch(`/api/qrcodes/${qrToEdit.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(qrData),
+        });
+        if (res.ok) saved = true;
+      } else {
+        const res = await fetch('/api/qrcodes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(qrData),
+        });
+        if (res.ok) saved = true;
       }
-      showToast('QR Code atualizado com sucesso!');
-    } else {
-      const res = await fetch('/api/qrcodes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(qrData),
-      });
-      if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err?.error || 'Falha ao criar QR Code.');
-      }
-      showToast(
-        qrData.mode === 'static'
-          ? 'QR Code Estático Permanente gerado com sucesso!'
-          : 'QR Code Dinâmico Reutilizável criado com sucesso!'
-      );
+    } catch {
+      // Backend not available (GitHub Pages)
     }
+
+    if (!saved) {
+      const currentList = getLocalQRCodes();
+      if (qrToEdit) {
+        const updated = currentList.map((q) =>
+          q.id === qrToEdit.id
+            ? {
+                ...q,
+                ...qrData,
+                content: { ...q.content, ...(qrData.content || {}) },
+                design: { ...q.design, ...(qrData.design || {}) },
+                updatedAt: new Date().toISOString(),
+              }
+            : q
+        );
+        saveLocalQRCodes(updated);
+        setQrcodes(updated);
+      } else {
+        const short = qrData.shortCode || (qrData.mode === 'static' ? 'fixo-' : 'qr-') + Math.random().toString(36).slice(2, 7);
+        const newQR: QRCodeItem = {
+          id: 'qr-' + Date.now().toString(36),
+          shortCode: short,
+          title: qrData.title || 'Novo QR Code',
+          type: qrData.type || 'wifi',
+          mode: qrData.mode || 'dynamic',
+          rawStaticData: qrData.rawStaticData,
+          clientId: qrData.clientId || 'dev',
+          clientName: qrData.clientId === 'dev' ? 'Dev Master' : (clients.find(c => c.id === qrData.clientId)?.company || 'Cliente'),
+          content: qrData.content || {},
+          design: qrData.design || {
+            fgColor: '#000000',
+            bgColor: '#ffffff',
+            frame: 'simple',
+            frameText: 'CONECTE AO WI-FI',
+            cornerStyle: 'rounded',
+            logoType: 'wifi',
+          },
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          totalScans: 0,
+          status: 'active',
+          scanLogs: [],
+        };
+        const updated = [newQR, ...currentList];
+        saveLocalQRCodes(updated);
+        setQrcodes(updated);
+      }
+    }
+
+    showToast(
+      qrData.mode === 'static'
+        ? 'QR Code Estático Permanente gerado com sucesso!'
+        : 'QR Code Dinâmico Reutilizável criado com sucesso!'
+    );
     loadData();
   };
 
   const handleSaveDestination = async (id: string, updatedContent: any) => {
-    const res = await fetch(`/api/qrcodes/${id}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ content: updatedContent }),
-    });
-    if (!res.ok) {
-      const err = await res.json();
-      throw new Error(err?.error || 'Falha ao atualizar destino.');
+    let saved = false;
+
+    try {
+      const res = await fetch(`/api/qrcodes/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: updatedContent }),
+      });
+      if (res.ok) saved = true;
+    } catch {
+      // Backend not available (GitHub Pages)
     }
+
+    if (!saved) {
+      const currentList = getLocalQRCodes();
+      const updated = currentList.map((q) =>
+        q.id === id
+          ? {
+              ...q,
+              content: { ...q.content, ...updatedContent },
+              updatedAt: new Date().toISOString(),
+            }
+          : q
+      );
+      saveLocalQRCodes(updated);
+      setQrcodes(updated);
+    }
+
     showToast('✓ Destino e senha atualizados! O QR Code impresso continua funcionando perfeitamente.');
     loadData();
   };
@@ -227,30 +393,40 @@ export default function App() {
     if (!window.confirm('Tem certeza que deseja excluir este QR Code?')) {
       return;
     }
+
     try {
       const res = await fetch(`/api/qrcodes/${id}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Falha ao excluir QR Code.');
-      showToast('QR Code excluído.');
-      loadData();
-    } catch (err: any) {
-      alert(err?.message || 'Erro ao excluir.');
+    } catch {
+      // Backend not available
     }
+
+    const currentList = getLocalQRCodes();
+    const updated = currentList.filter((q) => q.id !== id);
+    saveLocalQRCodes(updated);
+    setQrcodes(updated);
+    showToast('QR Code excluído.');
+    loadData();
   };
 
   const handleToggleQRStatus = async (qr: QRCodeItem) => {
-    const nextStatus = qr.status === 'active' ? 'paused' : 'active';
+    const nextStatus: 'active' | 'paused' = qr.status === 'active' ? 'paused' : 'active';
+
     try {
       const res = await fetch(`/api/qrcodes/${qr.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
       });
-      if (!res.ok) throw new Error('Falha ao alterar status.');
-      showToast(`QR Code ${nextStatus === 'active' ? 'ativado' : 'pausado'}.`);
-      loadData();
-    } catch (err: any) {
-      alert(err?.message || 'Erro ao alterar status.');
+    } catch {
+      // Backend not available
     }
+
+    const currentList = getLocalQRCodes();
+    const updated: QRCodeItem[] = currentList.map((q) => (q.id === qr.id ? { ...q, status: nextStatus } : q));
+    saveLocalQRCodes(updated);
+    setQrcodes(updated);
+    showToast(`QR Code ${nextStatus === 'active' ? 'ativado' : 'pausado'}.`);
+    loadData();
   };
 
   // Direct Public Viewer Route (e.g. when someone scans on their phone)
@@ -268,7 +444,7 @@ export default function App() {
   const isDev = currentSession.role === 'dev';
 
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col text-slate-800 antialiased selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen w-full max-w-[1920px] mx-auto bg-slate-100 flex flex-col text-slate-800 antialiased overflow-x-hidden selection:bg-indigo-500 selection:text-white">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-5 right-5 z-50 bg-slate-900 text-white px-5 py-3 rounded-2xl shadow-2xl border border-slate-700 flex items-center space-x-2 text-xs font-semibold animate-bounce">
@@ -320,7 +496,7 @@ export default function App() {
       )}
 
       {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+      <main className="flex-1 w-full max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8 py-5 sm:py-6 overflow-x-hidden">
         {loading ? (
           <div className="text-center py-20 text-slate-400 space-y-3">
             <div className="w-10 h-10 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto" />
@@ -385,6 +561,44 @@ export default function App() {
               setIsSimulatorOpen(true);
             }}
           />
+        )}
+
+        {/* Dev Master Utility Bar: Backup & GitHub Pages Helper */}
+        {isDev && (
+          <div className="mt-8 pt-4 border-t border-slate-200/80 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+            <div className="flex items-center space-x-2">
+              <span className="font-semibold text-slate-700">Publicação & Dados:</span>
+              <button
+                onClick={() => setIsGithubModalOpen(true)}
+                className="inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium transition-colors shadow-sm"
+              >
+                <Github className="w-3.5 h-3.5" />
+                <span>Instruções GitHub Pages</span>
+              </button>
+            </div>
+
+            <div className="flex items-center space-x-2">
+              <button
+                onClick={handleExportBackup}
+                className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 transition-colors shadow-sm"
+                title="Baixar arquivo JSON com todos os clientes e QR codes"
+              >
+                <DownloadCloud className="w-3.5 h-3.5 text-indigo-600" />
+                <span>Backup JSON</span>
+              </button>
+
+              <label className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-white hover:bg-slate-50 text-slate-700 font-medium border border-slate-200 transition-colors shadow-sm cursor-pointer">
+                <UploadCloud className="w-3.5 h-3.5 text-emerald-600" />
+                <span>Restaurar Backup</span>
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleImportBackup}
+                  className="hidden"
+                />
+              </label>
+            </div>
+          </div>
         )}
       </main>
 
@@ -482,6 +696,11 @@ export default function App() {
           showToast(`Conectado como ${session.user.name}`);
         }}
         clients={clients}
+      />
+
+      <GitHubPagesModal
+        isOpen={isGithubModalOpen}
+        onClose={() => setIsGithubModalOpen(false)}
       />
     </div>
   );

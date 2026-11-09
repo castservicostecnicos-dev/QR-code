@@ -223,7 +223,7 @@ export const QRControlTab: React.FC<QRControlTabProps> = ({
           )}
 
           {/* Mode Filter: All / Dynamic / Static */}
-          <div className="flex items-center space-x-1 bg-slate-100 p-1 rounded-xl w-full md:w-auto justify-center">
+          <div className="flex flex-wrap items-center gap-1 bg-slate-100 p-1 rounded-xl w-full sm:w-auto justify-center">
             <button
               onClick={() => setModeFilter('all')}
               className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-colors ${
@@ -259,9 +259,9 @@ export const QRControlTab: React.FC<QRControlTabProps> = ({
           </div>
         </div>
 
-        {/* Type Badges Filter */}
-        <div className="flex items-center space-x-2 overflow-x-auto pb-1 pt-1 border-t border-slate-100 text-xs text-slate-600">
-          <span className="font-semibold text-slate-400 text-[11px] shrink-0 uppercase tracking-wider">
+        {/* Type Badges Filter - Formatted in clean wrapped lines (no horizontal page scroll) */}
+        <div className="flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
+          <span className="font-semibold text-slate-400 text-[11px] shrink-0 uppercase tracking-wider mr-1">
             Tipo:
           </span>
           {[
@@ -276,7 +276,7 @@ export const QRControlTab: React.FC<QRControlTabProps> = ({
             <button
               key={t.id}
               onClick={() => setTypeFilter(t.id)}
-              className={`px-2.5 py-1 rounded-lg font-medium shrink-0 transition-colors ${
+              className={`px-2.5 py-1 rounded-lg font-medium transition-colors ${
                 typeFilter === t.id
                   ? 'bg-slate-800 text-white'
                   : 'bg-slate-50 text-slate-600 hover:bg-slate-200'
@@ -508,9 +508,9 @@ export const QRControlTab: React.FC<QRControlTabProps> = ({
                   </div>
                 </div>
 
-                {/* Card Actions Footer */}
-                <div className="p-3 bg-slate-50/90 border-t border-slate-100 rounded-b-2xl flex items-center justify-between gap-1.5">
-                  <div className="flex items-center space-x-1.5">
+                {/* Card Actions Footer - Wraps into lines if space is restricted */}
+                <div className="p-3 bg-slate-50/90 border-t border-slate-100 rounded-b-2xl flex flex-wrap items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {/* View QR & Download */}
                     <button
                       onClick={() => onOpenPreviewModal(qr)}

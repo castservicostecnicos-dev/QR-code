@@ -240,8 +240,8 @@ export const QRPreviewModal: React.FC<QRPreviewModalProps> = ({
             </button>
           )}
 
-          {/* Action Downloads Grid */}
-          <div className="w-full grid grid-cols-2 gap-2.5">
+          {/* Action Downloads Grid - Adapts responsively to mobile and desktop */}
+          <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
             <button
               onClick={handleDownloadPNG}
               className="py-2.5 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold flex items-center justify-center space-x-2 shadow-sm transition-colors"

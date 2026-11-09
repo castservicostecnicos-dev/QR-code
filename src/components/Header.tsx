@@ -36,8 +36,8 @@ export const Header: React.FC<HeaderProps> = ({
   const isDev = currentSession.role === 'dev';
 
   return (
-    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md w-full overflow-x-hidden">
+      <div className="max-w-[1920px] w-full mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Brand */}
           <div className="flex items-center space-x-3">
@@ -134,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
               {/* Dropdown Menu */}
               {showSwitchDropdown && (
                 <div
-                  className="absolute right-0 mt-2 w-72 bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 py-2 z-50 text-slate-200"
+                  className="absolute right-0 mt-2 w-72 sm:w-80 max-w-[calc(100vw-24px)] bg-slate-900 rounded-2xl shadow-2xl border border-slate-700 py-2 z-50 text-slate-200"
                   onClick={() => setShowSwitchDropdown(false)}
                 >
                   <div className="px-4 py-2 border-b border-slate-800 text-xs font-semibold text-slate-400 uppercase tracking-wider flex justify-between items-center">
@@ -226,12 +226,12 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Mobile Dev Tabs */}
+        {/* Mobile Dev Tabs - Wrapped into clean lines when needed without horizontal scroll */}
         {isDev && (
-          <div className="flex md:hidden border-t border-slate-800 py-2 space-x-2">
+          <div className="flex flex-wrap md:hidden border-t border-slate-800 py-2 gap-2 w-full">
             <button
               onClick={() => onSelectDevTab('clients')}
-              className={`flex-1 flex items-center justify-center space-x-1.5 py-1.5 rounded-lg text-xs font-medium ${
+              className={`flex-1 min-w-[140px] flex items-center justify-center space-x-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors ${
                 activeDevTab === 'clients'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-slate-800 text-slate-300'
@@ -242,7 +242,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
             <button
               onClick={() => onSelectDevTab('control')}
-              className={`flex-1 flex items-center justify-center space-x-1.5 py-1.5 rounded-lg text-xs font-medium ${
+              className={`flex-1 min-w-[140px] flex items-center justify-center space-x-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors ${
                 activeDevTab === 'control'
                   ? 'bg-indigo-600 text-white'
                   : 'bg-slate-800 text-slate-300'

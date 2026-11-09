@@ -70,12 +70,12 @@ export const PrintTemplateModal: React.FC<PrintTemplateModalProps> = ({
         </div>
 
         {/* Options Toolbar (Hidden in print) */}
-        <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 print:hidden shrink-0">
-          <div className="flex items-center space-x-2">
-            <span className="text-xs font-semibold text-slate-600">Formato:</span>
+        <div className="p-3 sm:p-4 bg-slate-50 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3 print:hidden shrink-0">
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-xs font-semibold text-slate-600 mr-1">Formato:</span>
             <button
               onClick={() => setTemplateSize('table')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                 templateSize === 'table'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -85,7 +85,7 @@ export const PrintTemplateModal: React.FC<PrintTemplateModalProps> = ({
             </button>
             <button
               onClick={() => setTemplateSize('a5')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                 templateSize === 'a5'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
@@ -95,7 +95,7 @@ export const PrintTemplateModal: React.FC<PrintTemplateModalProps> = ({
             </button>
             <button
               onClick={() => setTemplateSize('a4')}
-              className={`px-3 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
+              className={`px-2.5 py-1.5 text-xs font-medium rounded-lg border transition-colors ${
                 templateSize === 'a4'
                   ? 'bg-indigo-600 text-white border-indigo-600 shadow-sm'
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'

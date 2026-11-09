@@ -148,3 +148,8 @@ export interface UserSession {
     company?: string;
   };
 }
+
+export interface DatabaseSchema {
+  clients: ClientUser[];
+  qrcodes: QRCodeItem[];
+}

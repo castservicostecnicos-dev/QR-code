@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import type { QRCodeItem } from '../types';
 import { generateQRDataUrl, generateRawWifiString } from '../utils/qrGenerator';
+import { getLocalQRCodes } from '../utils/storage';
 
 interface PublicQRViewerProps {
   shortCode: string;
@@ -32,11 +33,31 @@ export const PublicQRViewer: React.FC<PublicQRViewerProps> = ({ shortCode, onGoH
     async function fetchQR() {
       try {
         setLoading(true);
-        const res = await fetch(`/api/qrcodes/${shortCode}`);
-        if (!res.ok) {
+        let data: QRCodeItem | null = null;
+
+        try {
+          const res = await fetch(`/api/qrcodes/${shortCode}`);
+          if (res.ok) {
+            data = await res.json();
+          }
+        } catch {
+          // Static host without backend
+        }
+
+        if (!data) {
+          const localList = getLocalQRCodes();
+          const found = localList.find(
+            (q) => q.shortCode.toLowerCase() === shortCode.toLowerCase()
+          );
+          if (found) {
+            data = found;
+          }
+        }
+
+        if (!data) {
           throw new Error('QR Code não encontrado ou desativado.');
         }
-        const data = await res.json();
+
         setQrCode(data);
 
         // Generate raw Wi-Fi string if type is wifi

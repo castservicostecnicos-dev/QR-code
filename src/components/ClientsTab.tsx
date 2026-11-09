@@ -148,8 +148,8 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({
           />
         </div>
 
-        <div className="flex items-center space-x-2 w-full sm:w-auto justify-end">
-          <span className="text-xs text-slate-500 font-medium">Status:</span>
+        <div className="flex flex-wrap items-center gap-1.5 w-full sm:w-auto justify-start sm:justify-end">
+          <span className="text-xs text-slate-500 font-medium mr-1">Status:</span>
           <button
             onClick={() => setStatusFilter('all')}
             className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-colors ${
@@ -342,11 +342,11 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({
 
                 {/* Card Actions Footer */}
                 <div className="p-3 bg-slate-50/80 border-t border-slate-100 rounded-b-2xl flex flex-col gap-2">
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {/* Impersonate / Enter as Client */}
                     <button
                       onClick={() => onImpersonateClient(client)}
-                      className="flex-1 flex items-center justify-center space-x-1.5 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors"
+                      className="flex-1 min-w-[120px] flex items-center justify-center space-x-1.5 py-2 px-3 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold rounded-lg border border-indigo-200 transition-colors"
                       title="Abrir o painel com a visão exata do cliente"
                     >
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -356,7 +356,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({
                     {/* Copy Credentials for WhatsApp */}
                     <button
                       onClick={() => copyCredentials(client)}
-                      className={`flex items-center justify-center space-x-1 py-2 px-2.5 rounded-lg text-xs font-medium border transition-colors ${
+                      className={`flex items-center justify-center space-x-1 py-2 px-2.5 rounded-lg text-xs font-medium border transition-colors shrink-0 ${
                         isCopied
                           ? 'bg-emerald-500 text-white border-emerald-600'
                           : 'bg-white hover:bg-slate-100 text-slate-700 border-slate-200'
@@ -377,7 +377,7 @@ export const ClientsTab: React.FC<ClientsTabProps> = ({
                     </button>
                   </div>
 
-                  <div className="flex items-center justify-between pt-1 border-t border-slate-200/50">
+                  <div className="flex flex-wrap items-center justify-between gap-1 pt-1 border-t border-slate-200/50">
                     <button
                       onClick={() => onSelectClientFilterInControl(client.id)}
                       className="text-[11px] text-indigo-600 hover:text-indigo-800 font-medium hover:underline flex items-center space-x-1"
