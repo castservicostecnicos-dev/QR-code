@@ -86,6 +86,23 @@ export default function App() {
     setTimeout(() => setToastMessage(null), 3500);
   };
 
+  // Safe JSON Fetch helper that never throws 'Unexpected end of JSON input' on empty or malformed responses
+  const safeJsonFetch = async <T,>(url: string, options?: RequestInit): Promise<T | null> => {
+    try {
+      const res = await fetch(url, options);
+      if (!res.ok) return null;
+      const text = await res.text();
+      if (!text || !text.trim()) return null;
+      try {
+        return JSON.parse(text) as T;
+      } catch {
+        return null;
+      }
+    } catch {
+      return null;
+    }
+  };
+
   // Fetch initial data (Hybrid: tries backend API, falls back to localStorage on static GitHub Pages)
   const loadData = async () => {
     try {
@@ -95,15 +112,17 @@ export default function App() {
 
       try {
         const [resClients, resQRs] = await Promise.all([
-          fetch('/api/clients'),
-          fetch('/api/qrcodes'),
+          safeJsonFetch<ClientUser[]>('/api/clients'),
+          safeJsonFetch<QRCodeItem[]>('/api/qrcodes'),
         ]);
 
-        if (resClients.ok && resQRs.ok) {
-          loadedClients = await resClients.json();
-          loadedQRs = await resQRs.json();
-          if (loadedClients) saveLocalClients(loadedClients);
-          if (loadedQRs) saveLocalQRCodes(loadedQRs);
+        if (resClients && Array.isArray(resClients) && resClients.length > 0) {
+          loadedClients = resClients;
+          saveLocalClients(resClients);
+        }
+        if (resQRs && Array.isArray(resQRs) && resQRs.length > 0) {
+          loadedQRs = resQRs;
+          saveLocalQRCodes(resQRs);
         }
       } catch {
         // Backend not available (e.g. static GitHub Pages host)
@@ -179,21 +198,14 @@ export default function App() {
     let savedSuccessfully = false;
 
     try {
-      if (clientToEdit) {
-        const res = await fetch(`/api/clients/${clientToEdit.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(clientData),
-        });
-        if (res.ok) savedSuccessfully = true;
-      } else {
-        const res = await fetch('/api/clients', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(clientData),
-        });
-        if (res.ok) savedSuccessfully = true;
-      }
+      const url = clientToEdit ? `/api/clients/${clientToEdit.id}` : '/api/clients';
+      const method = clientToEdit ? 'PUT' : 'POST';
+      const result = await safeJsonFetch<ClientUser>(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(clientData),
+      });
+      if (result) savedSuccessfully = true;
     } catch {
       // Backend not reached, fall back to local
     }
@@ -230,7 +242,7 @@ export default function App() {
     showToast(clientToEdit ? 'Cliente atualizado!' : 'Novo cliente cadastrado com credenciais!');
     setIsClientModalOpen(false);
     setClientToEdit(null);
-    loadData();
+    await loadData();
   };
 
   const handleDeleteClient = async (clientId: string) => {
@@ -238,29 +250,43 @@ export default function App() {
       return;
     }
     try {
-      const res = await fetch(`/api/clients/${clientId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Falha ao excluir cliente.');
-      showToast('Cliente removido com sucesso.');
-      loadData();
-    } catch (err: any) {
-      alert(err?.message || 'Erro ao excluir.');
+      await safeJsonFetch(`/api/clients/${clientId}`, { method: 'DELETE' });
+    } catch {
+      // Backend not reached
     }
+    const currentList = getLocalClients();
+    const updated = currentList.filter((c) => c.id !== clientId);
+    saveLocalClients(updated);
+    setClients(updated);
+
+    const currentQRs = getLocalQRCodes();
+    const updatedQRs = currentQRs.filter((q) => q.clientId !== clientId);
+    saveLocalQRCodes(updatedQRs);
+    setQrcodes(updatedQRs);
+
+    showToast('Cliente removido com sucesso.');
+    await loadData();
   };
 
   const handleToggleClientStatus = async (client: ClientUser) => {
-    const nextStatus = client.status === 'active' ? 'inactive' : 'active';
+    const nextStatus: 'active' | 'inactive' = client.status === 'active' ? 'inactive' : 'active';
     try {
-      const res = await fetch(`/api/clients/${client.id}`, {
+      await safeJsonFetch(`/api/clients/${client.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
       });
-      if (!res.ok) throw new Error('Falha ao alterar status.');
-      showToast(`Acesso do cliente ${nextStatus === 'active' ? 'ativado' : 'desativado'}.`);
-      loadData();
-    } catch (err: any) {
-      alert(err?.message || 'Erro ao alterar status.');
+    } catch {
+      // Backend not reached
     }
+    const currentList = getLocalClients();
+    const updated: ClientUser[] = currentList.map((c) =>
+      c.id === client.id ? { ...c, status: nextStatus, updatedAt: new Date().toISOString() } : c
+    );
+    saveLocalClients(updated);
+    setClients(updated);
+    showToast(`Acesso do cliente ${nextStatus === 'active' ? 'ativado' : 'desativado'}.`);
+    await loadData();
   };
 
   const handleImpersonateClient = (client: ClientUser) => {
@@ -281,21 +307,14 @@ export default function App() {
     let saved = false;
 
     try {
-      if (qrToEdit) {
-        const res = await fetch(`/api/qrcodes/${qrToEdit.id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(qrData),
-        });
-        if (res.ok) saved = true;
-      } else {
-        const res = await fetch('/api/qrcodes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(qrData),
-        });
-        if (res.ok) saved = true;
-      }
+      const url = qrToEdit ? `/api/qrcodes/${qrToEdit.id}` : '/api/qrcodes';
+      const method = qrToEdit ? 'PUT' : 'POST';
+      const result = await safeJsonFetch<QRCodeItem>(url, {
+        method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(qrData),
+      });
+      if (result) saved = true;
     } catch {
       // Backend not available (GitHub Pages)
     }
@@ -353,19 +372,19 @@ export default function App() {
         ? 'QR Code Estático Permanente gerado com sucesso!'
         : 'QR Code Dinâmico Reutilizável criado com sucesso!'
     );
-    loadData();
+    await loadData();
   };
 
   const handleSaveDestination = async (id: string, updatedContent: any) => {
     let saved = false;
 
     try {
-      const res = await fetch(`/api/qrcodes/${id}`, {
+      const result = await safeJsonFetch<any>(`/api/qrcodes/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ content: updatedContent }),
       });
-      if (res.ok) saved = true;
+      if (result) saved = true;
     } catch {
       // Backend not available (GitHub Pages)
     }
@@ -386,7 +405,7 @@ export default function App() {
     }
 
     showToast('✓ Destino e senha atualizados! O QR Code impresso continua funcionando perfeitamente.');
-    loadData();
+    await loadData();
   };
 
   const handleDeleteQRCode = async (id: string) => {
@@ -395,7 +414,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch(`/api/qrcodes/${id}`, { method: 'DELETE' });
+      await safeJsonFetch(`/api/qrcodes/${id}`, { method: 'DELETE' });
     } catch {
       // Backend not available
     }
@@ -405,14 +424,14 @@ export default function App() {
     saveLocalQRCodes(updated);
     setQrcodes(updated);
     showToast('QR Code excluído.');
-    loadData();
+    await loadData();
   };
 
   const handleToggleQRStatus = async (qr: QRCodeItem) => {
     const nextStatus: 'active' | 'paused' = qr.status === 'active' ? 'paused' : 'active';
 
     try {
-      const res = await fetch(`/api/qrcodes/${qr.id}`, {
+      await safeJsonFetch(`/api/qrcodes/${qr.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: nextStatus }),
@@ -426,7 +445,7 @@ export default function App() {
     saveLocalQRCodes(updated);
     setQrcodes(updated);
     showToast(`QR Code ${nextStatus === 'active' ? 'ativado' : 'pausado'}.`);
-    loadData();
+    await loadData();
   };
 
   // Direct Public Viewer Route (e.g. when someone scans on their phone)
@@ -469,11 +488,13 @@ export default function App() {
 
       {/* Impersonation Banner if client view is active */}
       {!isDev && (
-        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-4 py-2 text-xs flex items-center justify-between shadow-sm">
-          <div className="flex items-center space-x-2 max-w-7xl mx-auto w-full">
-            <span className="font-bold">Painel do Cliente:</span>
-            <span>{currentSession.user.company || currentSession.user.name}</span>
-            <span className="text-emerald-200">({currentSession.user.email})</span>
+        <div className="bg-gradient-to-r from-emerald-600 to-teal-700 text-white px-3 sm:px-6 py-2 text-xs shadow-sm w-full">
+          <div className="flex flex-wrap items-center justify-between gap-2 max-w-[1920px] mx-auto w-full">
+            <div className="flex items-center space-x-2 truncate min-w-0 max-w-full sm:max-w-md">
+              <span className="font-bold shrink-0">Painel do Cliente:</span>
+              <span className="font-semibold truncate">{currentSession.user.company || currentSession.user.name}</span>
+              <span className="text-emerald-200 hidden sm:inline truncate">({currentSession.user.email})</span>
+            </div>
             <button
               onClick={() => {
                 setCurrentSession({
@@ -487,9 +508,9 @@ export default function App() {
                 });
                 showToast('Retornado para o Acesso Dev Master.');
               }}
-              className="ml-auto underline font-bold hover:text-white"
+              className="inline-flex items-center space-x-1 px-3 py-1.5 rounded-lg bg-emerald-800/90 hover:bg-emerald-900 text-white font-bold transition-colors shrink-0 text-xs shadow-sm border border-emerald-400/30 ml-auto sm:ml-0"
             >
-              Voltar ao Acesso Dev Master →
+              <span>← Voltar ao Acesso Dev Master</span>
             </button>
           </div>
         </div>

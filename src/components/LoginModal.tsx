@@ -39,7 +39,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         body: JSON.stringify({ email: email.trim(), password }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = {};
+      if (text && text.trim()) {
+        try {
+          data = JSON.parse(text);
+        } catch {
+          data = {};
+        }
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Erro ao realizar login.');
       }

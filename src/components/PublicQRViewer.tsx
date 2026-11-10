@@ -38,7 +38,14 @@ export const PublicQRViewer: React.FC<PublicQRViewerProps> = ({ shortCode, onGoH
         try {
           const res = await fetch(`/api/qrcodes/${shortCode}`);
           if (res.ok) {
-            data = await res.json();
+            const text = await res.text();
+            if (text && text.trim()) {
+              try {
+                data = JSON.parse(text);
+              } catch {
+                data = null;
+              }
+            }
           }
         } catch {
           // Static host without backend

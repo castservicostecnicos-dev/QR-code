@@ -42,6 +42,109 @@
   ],
   "qrcodes": [
     {
+      "id": "qr-mwal77i56pep",
+      "shortCode": "fixo-agc54",
+      "title": "QR Estático Fixo",
+      "type": "text",
+      "mode": "static",
+      "rawStaticData": "Texto gravado permanente",
+      "clientId": "dev",
+      "clientName": "Dev Master (Administrador)",
+      "content": {
+        "text": "Texto gravado permanente"
+      },
+      "design": {
+        "fgColor": "#000000",
+        "bgColor": "#ffffff",
+        "frame": "simple",
+        "frameText": "ESCANEIE AQUI",
+        "cornerStyle": "rounded",
+        "logoType": "link"
+      },
+      "createdAt": "2026-11-10T11:08:34.877Z",
+      "updatedAt": "2026-11-10T11:08:34.877Z",
+      "totalScans": 0,
+      "status": "active",
+      "scanLogs": []
+    },
+    {
+      "id": "qr-mwal720e6ogb",
+      "shortCode": "link-ujps9",
+      "title": "Cardápio Restaurante Sol",
+      "type": "url",
+      "mode": "dynamic",
+      "clientId": "dev",
+      "clientName": "Dev Master (Administrador)",
+      "content": {
+        "targetUrl": "https://menu.restaurantesol.com.br"
+      },
+      "design": {
+        "fgColor": "#000000",
+        "bgColor": "#ffffff",
+        "frame": "simple",
+        "frameText": "ESCANEIE AQUI",
+        "cornerStyle": "rounded",
+        "logoType": "link"
+      },
+      "createdAt": "2026-11-10T11:08:27.758Z",
+      "updatedAt": "2026-11-10T11:08:27.758Z",
+      "totalScans": 0,
+      "status": "active",
+      "scanLogs": []
+    },
+    {
+      "id": "qr-mwal2gd61eed",
+      "shortCode": "wifi-p0b6k",
+      "title": "Test QR Code",
+      "type": "wifi",
+      "mode": "dynamic",
+      "clientId": "dev",
+      "clientName": "Dev Master (Administrador)",
+      "content": {
+        "ssid": "MyNetwork",
+        "password": "123"
+      },
+      "design": {
+        "fgColor": "#000000",
+        "bgColor": "#ffffff",
+        "frame": "simple",
+        "frameText": "CONECTE AO WI-FI",
+        "cornerStyle": "rounded",
+        "logoType": "wifi"
+      },
+      "createdAt": "2026-11-10T11:04:53.082Z",
+      "updatedAt": "2026-11-10T11:04:53.082Z",
+      "totalScans": 0,
+      "status": "active",
+      "scanLogs": []
+    },
+    {
+      "id": "qr-mw9pl3xkh872",
+      "shortCode": "wifi-4p87k",
+      "title": "Teste",
+      "type": "wifi",
+      "mode": "dynamic",
+      "clientId": "dev",
+      "clientName": "Dev Master (Administrador)",
+      "content": {
+        "ssid": "Teste",
+        "password": "123"
+      },
+      "design": {
+        "fgColor": "#000000",
+        "bgColor": "#ffffff",
+        "frame": "simple",
+        "frameText": "CONECTE AO WI-FI",
+        "cornerStyle": "rounded",
+        "logoType": "wifi"
+      },
+      "createdAt": "2026-11-09T20:23:35.720Z",
+      "updatedAt": "2026-11-09T20:23:35.720Z",
+      "totalScans": 0,
+      "status": "active",
+      "scanLogs": []
+    },
+    {
       "id": "qr-1",
       "shortCode": "wifi-aromas",
       "title": "Wi-Fi Clientes - Café Aromas",

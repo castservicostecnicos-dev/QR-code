@@ -216,7 +216,13 @@ const initialQRCodes: QRCodeItem[] = [
   }
 ];
 
+let inMemoryDb: DatabaseSchema | null = null;
+
 function readDb(): DatabaseSchema {
+  if (inMemoryDb) {
+    return inMemoryDb;
+  }
+
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
@@ -227,29 +233,47 @@ function readDb(): DatabaseSchema {
         qrcodes: initialQRCodes,
       };
       fs.writeFileSync(DB_FILE, JSON.stringify(initialData, null, 2), 'utf-8');
+      inMemoryDb = initialData;
       return initialData;
     }
     const data = fs.readFileSync(DB_FILE, 'utf-8');
-    return JSON.parse(data) as DatabaseSchema;
+    if (!data || !data.trim()) {
+      const initialData: DatabaseSchema = {
+        clients: initialClients,
+        qrcodes: initialQRCodes,
+      };
+      inMemoryDb = initialData;
+      return initialData;
+    }
+    inMemoryDb = JSON.parse(data) as DatabaseSchema;
+    return inMemoryDb;
   } catch (err) {
     console.error('Error reading DB, using memory fallback:', err);
-    return {
+    const fallback: DatabaseSchema = {
       clients: initialClients,
       qrcodes: initialQRCodes,
     };
+    inMemoryDb = fallback;
+    return fallback;
   }
 }
 
 function writeDb(data: DatabaseSchema): void {
+  inMemoryDb = data;
   try {
     if (!fs.existsSync(DATA_DIR)) {
       fs.mkdirSync(DATA_DIR, { recursive: true });
     }
-    fs.writeFileSync(DB_FILE, JSON.stringify(data, null, 2), 'utf-8');
+    const tempFile = path.resolve(DATA_DIR, `db.json.tmp.${Date.now()}.${Math.random().toString(36).slice(2, 6)}`);
+    fs.writeFileSync(tempFile, JSON.stringify(data, null, 2), 'utf-8');
+    fs.renameSync(tempFile, DB_FILE);
   } catch (err) {
     console.error('Error writing DB:', err);
   }
 }
+
+// Pre-initialize in-memory DB immediately
+inMemoryDb = readDb();
 
 function parseDevice(userAgent = ''): string {
   if (/iPhone|iPad|iPod/i.test(userAgent)) return 'Apple iOS';

@@ -37,23 +37,23 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="bg-slate-900 border-b border-slate-800 text-white sticky top-0 z-30 shadow-md w-full overflow-x-hidden">
-      <div className="max-w-[1920px] w-full mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+      <div className="max-w-[1920px] w-full mx-auto px-2 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-14 sm:h-16 w-full">
           {/* Brand */}
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-orange-500/20">
-              <QrCode className="w-6 h-6 text-white" />
+          <div className="flex items-center space-x-2 sm:space-x-3 shrink-0">
+            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-orange-500/20 shrink-0">
+              <QrCode className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
             </div>
             <div>
-              <div className="flex items-center space-x-2">
-                <span className="font-bold text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
+              <div className="flex items-center space-x-1.5 sm:space-x-2">
+                <span className="font-bold text-sm sm:text-lg tracking-tight bg-gradient-to-r from-white via-slate-100 to-slate-300 bg-clip-text text-transparent">
                   QR Dinâmico
                 </span>
-                <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="hidden sm:inline-flex text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   Reutilizável
                 </span>
               </div>
-              <p className="text-xs text-slate-400 hidden sm:block">
+              <p className="text-xs text-slate-400 hidden lg:block">
                 Altere o destino e a senha do Wi-Fi sem reimprimir
               </p>
             </div>
@@ -61,7 +61,7 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* Center: Dev Navigation Tabs (if Dev) */}
           {isDev && (
-            <div className="hidden md:flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700">
+            <div className="hidden md:flex items-center bg-slate-800/80 p-1 rounded-xl border border-slate-700 shrink-0 mx-2">
               <button
                 onClick={() => onSelectDevTab('clients')}
                 className={`flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition-all ${
@@ -93,42 +93,42 @@ export const Header: React.FC<HeaderProps> = ({
             </div>
           )}
 
-          {/* Right Profile & Switcher */}
-          <div className="flex items-center space-x-2 sm:space-x-3">
+          {/* Right Profile & Switcher - Strictly constrained within page boundary */}
+          <div className="flex items-center space-x-1.5 sm:space-x-3 shrink-0 ml-auto">
             {/* Quick Mobile Scan Simulation */}
             <button
               onClick={onOpenSimulator}
               title="Simular escaneamento com celular"
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium border border-slate-700 transition-colors"
+              className="flex items-center space-x-1 p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white text-xs font-medium border border-slate-700 transition-colors shrink-0"
             >
-              <Smartphone className="w-3.5 h-3.5 text-amber-400" />
+              <Smartphone className="w-3.5 h-3.5 text-amber-400 shrink-0" />
               <span className="hidden sm:inline">Simular Câmera</span>
             </button>
 
             {/* Profile Dropdown / Switcher */}
-            <div className="relative">
+            <div className="relative shrink-0">
               <button
                 onClick={() => setShowSwitchDropdown(!showSwitchDropdown)}
-                className={`flex items-center space-x-2 px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition-all ${
+                className={`flex items-center space-x-1 sm:space-x-2 px-2 sm:px-3 py-1.5 rounded-xl text-xs sm:text-sm font-medium border transition-all shrink-0 max-w-[120px] sm:max-w-[200px] ${
                   isDev
-                    ? 'bg-indigo-950/50 border-indigo-500/40 text-indigo-200 hover:bg-indigo-900/60'
-                    : 'bg-emerald-950/50 border-emerald-500/40 text-emerald-200 hover:bg-emerald-900/60'
+                    ? 'bg-indigo-950/60 border-indigo-500/40 text-indigo-200 hover:bg-indigo-900/70 shadow-sm'
+                    : 'bg-emerald-950/60 border-emerald-500/40 text-emerald-200 hover:bg-emerald-900/70 shadow-sm'
                 }`}
               >
                 {isDev ? (
-                  <Shield className="w-4 h-4 text-indigo-400" />
+                  <Shield className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-indigo-400 shrink-0" />
                 ) : (
-                  <UserCheck className="w-4 h-4 text-emerald-400" />
+                  <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 shrink-0" />
                 )}
-                <div className="text-left max-w-[120px] sm:max-w-[180px] truncate">
-                  <div className="font-semibold truncate">
-                    {isDev ? 'Acesso Dev (Master)' : currentSession.user.name}
+                <div className="text-left truncate min-w-0">
+                  <div className="font-semibold truncate text-[11px] sm:text-xs leading-tight">
+                    {isDev ? 'Acesso Dev' : currentSession.user.name}
                   </div>
-                  <div className="text-[10px] text-slate-400 truncate">
-                    {isDev ? 'Painel Completo Dev' : currentSession.user.company}
+                  <div className="text-[9px] sm:text-[10px] text-slate-400 truncate hidden sm:block leading-tight">
+                    {isDev ? 'Painel Master' : currentSession.user.company}
                   </div>
                 </div>
-                <ChevronDown className="w-3.5 h-3.5 opacity-70" />
+                <ChevronDown className="w-3 h-3 sm:w-3.5 sm:h-3.5 opacity-70 shrink-0" />
               </button>
 
               {/* Dropdown Menu */}
@@ -226,30 +226,30 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Mobile Dev Tabs - Wrapped into clean lines when needed without horizontal scroll */}
+        {/* Mobile Dev Tabs - 2-column grid strictly constrained to 100% width */}
         {isDev && (
-          <div className="flex flex-wrap md:hidden border-t border-slate-800 py-2 gap-2 w-full">
+          <div className="grid grid-cols-2 md:hidden border-t border-slate-800 py-2 gap-1.5 w-full">
             <button
               onClick={() => onSelectDevTab('clients')}
-              className={`flex-1 min-w-[140px] flex items-center justify-center space-x-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors ${
+              className={`w-full flex items-center justify-center space-x-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-colors truncate min-w-0 ${
                 activeDevTab === 'clients'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-800 text-slate-300'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              <Users className="w-3.5 h-3.5" />
-              <span>1. Clientes ({clients.length})</span>
+              <Users className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">1. Clientes ({clients.length})</span>
             </button>
             <button
               onClick={() => onSelectDevTab('control')}
-              className={`flex-1 min-w-[140px] flex items-center justify-center space-x-1.5 py-1.5 px-2 rounded-lg text-xs font-medium transition-colors ${
+              className={`w-full flex items-center justify-center space-x-1.5 py-2 px-2 rounded-lg text-xs font-medium transition-colors truncate min-w-0 ${
                 activeDevTab === 'control'
-                  ? 'bg-indigo-600 text-white'
-                  : 'bg-slate-800 text-slate-300'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
               }`}
             >
-              <Sliders className="w-3.5 h-3.5" />
-              <span>2. Geração & Controle</span>
+              <Sliders className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">2. Geração & Controle</span>
             </button>
           </div>
         )}

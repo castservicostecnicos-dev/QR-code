@@ -167,11 +167,15 @@ export const fallbackInitialQRCodes: QRCodeItem[] = [
 export function getLocalClients(): ClientUser[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_CLIENTS);
-    if (!raw) {
+    if (!raw || !raw.trim() || raw === 'undefined' || raw === 'null') {
       localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(fallbackInitialClients));
       return fallbackInitialClients;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+    return fallbackInitialClients;
   } catch {
     return fallbackInitialClients;
   }
@@ -179,6 +183,7 @@ export function getLocalClients(): ClientUser[] {
 
 export function saveLocalClients(clients: ClientUser[]): void {
   try {
+    if (!clients || !Array.isArray(clients)) return;
     localStorage.setItem(STORAGE_KEY_CLIENTS, JSON.stringify(clients));
   } catch (err) {
     console.error('Failed to save clients in localStorage:', err);
@@ -188,11 +193,15 @@ export function saveLocalClients(clients: ClientUser[]): void {
 export function getLocalQRCodes(): QRCodeItem[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY_QRCODES);
-    if (!raw) {
+    if (!raw || !raw.trim() || raw === 'undefined' || raw === 'null') {
       localStorage.setItem(STORAGE_KEY_QRCODES, JSON.stringify(fallbackInitialQRCodes));
       return fallbackInitialQRCodes;
     }
-    return JSON.parse(raw);
+    const parsed = JSON.parse(raw);
+    if (Array.isArray(parsed) && parsed.length > 0) {
+      return parsed;
+    }
+    return fallbackInitialQRCodes;
   } catch {
     return fallbackInitialQRCodes;
   }
@@ -200,8 +209,10 @@ export function getLocalQRCodes(): QRCodeItem[] {
 
 export function saveLocalQRCodes(qrcodes: QRCodeItem[]): void {
   try {
+    if (!qrcodes || !Array.isArray(qrcodes)) return;
     localStorage.setItem(STORAGE_KEY_QRCODES, JSON.stringify(qrcodes));
   } catch (err) {
     console.error('Failed to save qrcodes in localStorage:', err);
   }
 }
+
